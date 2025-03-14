@@ -1,24 +1,35 @@
 #!/usr/bin/python3
-"""Script that fetch 10 hot post for a given subreddit."""
+"""
+1-top_ten.py
+"""
 import requests
 
-
 def top_ten(subreddit):
-    """Return number of subscribers if @subreddit is valid subreddit.
-    if not return 0."""
+    """
+    Queries the Reddit API and prints the titles of the first 10 hot posts for a given subreddit.
+    
+    Args:
+        subreddit (str): The name of the subreddit to query.
+    """
+    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
+    headers = {"User-Agent": "python:subreddit.hot.posts:v1.0 (by /u/yourusername)"}  # Set a custom User-Agent
+    params = {"limit": 10}  # Limit the number of posts to 10
 
-    headers = {'User-Agent': 'MyAPI/0.0.1'}
-    subreddit_url = "https://reddit.com/r/{}.json".format(subreddit)
-    response = requests.get(subreddit_url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+        if response.status_code == 200:  # Check if the request was successful
+            data = response.json()
+            posts = data["data"]["children"]
+            for post in posts:
+                print(post["data"]["title"])
+        else:
+            print(None)  # Print None for invalid subreddits or other errors
+    except Exception as e:
+        print(None)  # Handle any exceptions (e.g., network issues)
 
-    if response.status_code == 200:
-        json_data = response.json()
-        for i in range(10):
-            print(
-                json_data.get('data')
-                .get('children')[i]
-                .get('data')
-                .get('title')
-            )
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        print("Please pass an argument for the subreddit to search.")
     else:
-        print(None)
+        top_ten(sys.argv[1])
